@@ -9,21 +9,20 @@ import expressJwt from 'express-jwt';
 const router = Router();
 
 interface LoginData {
-  email: string;
+  username: string;
   password: string;
 }
 
 interface NewUserData {
   name: string;
-  email: string;
+  username: string;
   password: string;
   avatar: string;
 }
 
 interface JwtUser {
   id: number;
-  name: string;
-  email: string;
+  username: string;
   avatar: string;
   iat: number;
   exp: number;
@@ -35,22 +34,22 @@ interface RequestWithUser extends Request {
 
 router.post('/login', async (req: Request, res: Response) => {
   const loginData: LoginData = req.body.loginData;
+
   if (!loginData) {
     return res.status(BAD_REQUEST).json({
       error: paramMissingError,
     });
   }
-
   const user: User = await User.findOne({
     where: {
-      email: loginData.email
+      username: loginData.username
     },
     raw: true
   });
 
-  if(!user) return res.json({error: 'true'}).status(UNAUTHORIZED);
+  if(!user) return res.status(UNAUTHORIZED).send({ error: 'unauthorized-user' });
 
-  if(!bcrypt.compareSync(loginData.password, user.password)) return res.json({error: 'true'}).status(UNAUTHORIZED);
+  if(!bcrypt.compareSync(loginData.password, user.password)) return res.status(UNAUTHORIZED).send({ error: 'unauthorized-user' });
 
   const { password, createdAt, updatedAt, ...authUser } = user;
 
@@ -75,14 +74,14 @@ router.post('/create', async (req: Request, res: Response) => {
     await User.create(newUserData);
   } catch(err) {
     if(err.errors[0].type !== 'unique violation') {
-      return res.json({
+      return res.status(BAD_REQUEST).send({
         error: 'unknown-cu-error'
-      }).status(BAD_REQUEST); 
+      }); 
     }
 
-    return res.json({
-      error: 'unique-cu-email'
-    }).status(BAD_REQUEST);
+    return res.status(BAD_REQUEST).send({
+      error: 'unique-cu-username'
+    });
   }
 
   return res.json({
@@ -90,7 +89,7 @@ router.post('/create', async (req: Request, res: Response) => {
   }).status(OK);
 });
 
-router.get('/all', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
+router.get('/all', async (req: RequestWithUser, res: Response) => {
   const users = await User.findAll();
   return res.json(users).status(OK);
 });

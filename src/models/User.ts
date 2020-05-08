@@ -2,9 +2,8 @@ import { Model, DataTypes, Sequelize } from "sequelize";
 
 export default class User extends Model {
   public id!: number;
-  public name!: string;
+  public username!: string;
   public avatar!: string;
-  public email!: string; 
   public password!: string; 
   public createdAt!: string;
   public updatedAt!: string;
@@ -17,17 +16,13 @@ export function initUserModel(sequelize: Sequelize) {
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
+    username: {
       type: new DataTypes.STRING(128),
       allowNull: false,
     },
     avatar: {
       type: new DataTypes.STRING(128),
       allowNull: false,
-    },
-    email: {
-      type: new DataTypes.STRING(128),
-      allowNull: true
     },
     password: {
       type: new DataTypes.STRING(128),
