@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import { paramMissingError } from '@shared/constants';
 import User from '../models/User';
 import jwt from 'jsonwebtoken';
-import expressJwt from 'express-jwt';
 
 const router = Router();
 
@@ -18,18 +17,6 @@ interface NewUserData {
   username: string;
   password: string;
   avatar: string;
-}
-
-interface JwtUser {
-  id: number;
-  username: string;
-  avatar: string;
-  iat: number;
-  exp: number;
-}
-
-interface RequestWithUser extends Request {
-  user?: JwtUser;
 }
 
 router.post('/login', async (req: Request, res: Response) => {
@@ -87,11 +74,6 @@ router.post('/create', async (req: Request, res: Response) => {
   return res.json({
     done: 'true'
   }).status(OK);
-});
-
-router.get('/all', async (req: RequestWithUser, res: Response) => {
-  const users = await User.findAll();
-  return res.json(users).status(OK);
 });
 
 export default router;

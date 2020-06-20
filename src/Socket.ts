@@ -1,5 +1,6 @@
 import socketIO from 'socket.io';
 import http from 'http';
+import Message from './models/Message';
 
 export function initSocketIO(httpServer: http.Server) {
   const io = socketIO(httpServer);
@@ -7,8 +8,21 @@ export function initSocketIO(httpServer: http.Server) {
   io.on('connection', (socket) => {
     console.log('user connected');
 
-    socket.on('message-sent', (message) => {
-      io.sockets.emit('message-received', message);
-    })
+    socket.on('message-sent', async (conversationMessage) => {
+      const msg = await Message.create({
+        senderId: conversationMessage.senderId,
+        receiverId: conversationMessage.receiverId,
+        conversationId: conversationMessage.conversationId,
+        message: conversationMessage.message,
+        is_system: 0
+      });
+
+      const sender = await msg.getSender();
+
+      io.sockets.emit('message-received', {
+        ...msg.dataValues,
+        Sender: sender.dataValues
+      });
+    });
   });
 }

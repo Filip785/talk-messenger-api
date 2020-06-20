@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize } from "sequelize";
+import { Model, DataTypes, Sequelize, Association, HasManyGetAssociationsMixin } from "sequelize";
 
 export default class User extends Model {
   public id!: number;
@@ -30,7 +30,7 @@ export function initUserModel(sequelize: Sequelize) {
     }
   }, {
     tableName: 'users',
-    sequelize: sequelize, // this bit is important
+    sequelize: sequelize,
   });
 }
 
