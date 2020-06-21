@@ -46,7 +46,7 @@ interface AddFriendData {
 
 router.get('/get-friends', async (req: RequestWithUser, res: Response) => {
   const currentUserId = Number(req.query.currentUserId);
-
+  
   const userFriends: FriendsFind[] = await Friend.findAll({
     where: {
       [Op.or]: {
@@ -94,12 +94,24 @@ router.get('/get-friends', async (req: RequestWithUser, res: Response) => {
 });
 
 router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
-  const conversationId = Number(req.query.conversationId);
+  const authUserId = Number(req.query.authUserId);
+  const receiverId = Number(req.query.receiverId);
+
+  const conversation: Friend = await Friend.findOne({
+    where: {
+      [Op.or]: [
+        { user_1: authUserId, user_2: receiverId },
+        { user_1: receiverId, user_2: authUserId }
+      ]
+    },
+    raw: true
+  });
+
 
   const messages = await Message.findAll({
     attributes: ['id', 'message', 'is_system', 'createdAt', 'conversationId'],
     where: {
-      conversationId: conversationId
+      conversationId: conversation.id
     },
     include: [{
       model: User,
@@ -113,7 +125,10 @@ router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
     }]
   });
 
-  return res.json(messages).status(OK);
+  return res.json({
+    items: messages,
+    conversationId: conversation.id
+  }).status(OK);
 });
 
 router.get('/possible-friends', async (req: RequestWithUser, res: Response) => {

@@ -28,7 +28,7 @@ export function initFriendModel(sequelize: Sequelize) {
       allowNull: true
     }
   }, {
-    tableName: 'friends',
+    tableName: 'Friends',
     sequelize: sequelize,
   });
 

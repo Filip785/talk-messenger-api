@@ -11,21 +11,21 @@ module.exports = {
       senderId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'users',
+          model: 'Users',
           key: 'id'
         }
       },
       receiverId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'users',
+          model: 'Users',
           key: 'id'
         }
       },
       conversationId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'friends',
+          model: 'Friends',
           key: 'id'
         }
       },

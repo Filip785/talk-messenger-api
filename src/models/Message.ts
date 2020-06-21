@@ -39,7 +39,7 @@ export function initMessageModel(sequelize: Sequelize) {
       allowNull: false
     }
   }, {
-    tableName: 'messages',
+    tableName: 'Messages',
     sequelize: sequelize,
   });
 

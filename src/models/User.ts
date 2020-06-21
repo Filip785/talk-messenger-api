@@ -29,7 +29,7 @@ export function initUserModel(sequelize: Sequelize) {
       allowNull: true
     }
   }, {
-    tableName: 'users',
+    tableName: 'Users',
     sequelize: sequelize,
   });
 }
