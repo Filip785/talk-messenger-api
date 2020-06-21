@@ -7,6 +7,7 @@ import Message from '../models/Message';
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import { Op } from 'sequelize';
+import { format } from 'date-fns';
 
 const router = Router();
 
@@ -37,6 +38,7 @@ interface FriendsFind {
 interface FriendConversation {
   conversationId: number;
   friend: FriendReturn;
+  lastMessage?: { message: string, createdAtTime: string, createdAt: string }
 }
 
 interface AddFriendData {
@@ -73,20 +75,27 @@ router.get('/get-friends', async (req: RequestWithUser, res: Response) => {
 
     for (let x = 0; x < friendsLength; x++) {
       const item = userFriends[x];
-      if(Number(item.User1.id) !== currentUserId) {
-        friendsReturn.push({
-          conversationId: item.id,
-          friend: item.User1
-        });
-        continue;
+
+      const lastMessage: Message = await Message.findOne({
+        where: {
+          conversationId: item.id
+        },
+        order: [ [ 'createdAt', 'DESC' ] ],
+        raw: true
+      });
+
+      const friendsObject: FriendConversation = { conversationId: item.id, friend: Number(item.User1.id) !== currentUserId ? item.User1 : item.User2, lastMessage: undefined };
+
+      if(lastMessage) {
+        const dateTime = new Date(lastMessage.createdAt);
+
+        const createdAtTime = format(dateTime, 'hh:mm a');
+        const createdAt = format(dateTime, 'dd.MM.yyyy');
+
+        friendsObject.lastMessage = { message: `${item.User1.username}: ${lastMessage.message}`, createdAtTime, createdAt };
       }
 
-      if(Number(item.User2.id) !== currentUserId) {
-        friendsReturn.push({
-          conversationId: item.id,
-          friend: item.User2
-        });
-      }
+      friendsReturn.push(friendsObject);
     }
   }
 
@@ -107,7 +116,6 @@ router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
     raw: true
   });
 
-
   const messages = await Message.findAll({
     attributes: ['id', 'message', 'is_system', 'createdAt', 'conversationId'],
     where: {
@@ -122,7 +130,8 @@ router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
     }, {
       model: Friend,
       as: 'Friend'
-    }]
+    }],
+    order: [ [ 'id', 'ASC' ] ]
   });
 
   return res.json({

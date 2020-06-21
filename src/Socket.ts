@@ -1,6 +1,7 @@
 import socketIO from 'socket.io';
 import http from 'http';
 import Message from './models/Message';
+import { format } from 'date-fns';
 
 export function initSocketIO(httpServer: http.Server) {
   const io = socketIO(httpServer);
@@ -18,6 +19,16 @@ export function initSocketIO(httpServer: http.Server) {
       });
 
       const sender = await msg.getSender();
+
+      const dateTimeCreated = new Date(msg.createdAt);
+
+      const timeCreated = format(dateTimeCreated, 'hh:mm a');
+      const dateCreated = format(dateTimeCreated, 'dd.MM.yyyy');
+
+      msg.dataValues.createdAtTime = timeCreated;
+      msg.dataValues.createdAt = dateCreated;
+
+      msg.dataValues.message = `${sender.username}: ${msg.dataValues.message}`;
 
       io.sockets.emit('message-received', {
         ...msg.dataValues,

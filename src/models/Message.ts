@@ -9,6 +9,8 @@ export default class Message extends Model {
   public conversationId!: number;
   public message!: string;
   public is_system!: number;
+  public createdAt!: string;
+  public updatedAt!: string;
 }
 
 export function initMessageModel(sequelize: Sequelize) {
