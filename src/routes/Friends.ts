@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import { Op } from 'sequelize';
 import { format } from 'date-fns';
+import SystemConfigs from 'src/models/SystemConfigs';
 
 const router = Router();
 
@@ -134,9 +135,12 @@ router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
     order: [ [ 'id', 'ASC' ] ]
   });
 
+  const newConversationMessage: string = await SystemConfigs.getNewConversationMessage();
+
   return res.json({
     items: messages,
-    conversationId: conversation.id
+    conversationId: conversation.id,
+    newConversationMessage
   }).status(OK);
 });
 
@@ -232,10 +236,15 @@ router.post('/accept-friend', async (req: RequestWithUser, res: Response) => {
     });
   }
 
-  try {
-    const user: Friend = await Friend.findOne({ where: { user_1: addFriendData.addingId, user_2: addFriendData.friendId } });
+  let friendRelationship: Friend | null = null;
+  let newConversationMessage: string | null = null;
 
-    await user.update({
+  try {
+    friendRelationship = await Friend.findOne({ where: { user_1: addFriendData.addingId, user_2: addFriendData.friendId } });
+    
+    newConversationMessage = await SystemConfigs.getNewConversationMessage();
+
+    await friendRelationship!.update({
       is_accepted: 1
     });
   } catch(err) {
@@ -245,7 +254,8 @@ router.post('/accept-friend', async (req: RequestWithUser, res: Response) => {
   }
 
   return res.json({
-    done: 'true'
+    conversationId: friendRelationship!.id,
+    newConversationMessage
   }).status(OK);
 });
 

@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { initFriendModel } from './models/Friend';
 import { initMessageModel } from './models/Message';
+import { initSystemConfigs } from './models/SystemConfigs';
 
 const configContents = JSON.parse(fs.readFileSync(path.join(__dirname, '../database/config/config.json'), { encoding: 'utf8' }));
 
@@ -33,6 +34,7 @@ function initModels(sequelize: Sequelize) {
   initUserModel(sequelize);
   initFriendModel(sequelize);
   initMessageModel(sequelize);
+  initSystemConfigs(sequelize);
 }
 
 sequelize.authenticate().then(() => {
