@@ -20,8 +20,6 @@ const dbPort = configContents.development.port;
 const dialect = configContents.development.dialect;
 const host = configContents.development.host;
 
-console.log('host', host);
-
 // Start the server
 const port = Number(process.env.PORT || 3000);
 
