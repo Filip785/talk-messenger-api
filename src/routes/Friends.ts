@@ -4,7 +4,7 @@ import { paramMissingError } from '@shared/constants';
 import User from '../models/User';
 import Friend from '../models/Friend';
 import Message from '../models/Message';
-import jwt from 'jsonwebtoken';
+//import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import { Op } from 'sequelize';
 import { format } from 'date-fns';
@@ -47,7 +47,7 @@ interface AddFriendData {
   friendId: number;
 }
 
-router.get('/get-friends', async (req: RequestWithUser, res: Response) => {
+router.get('/get-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
   const currentUserId = Number(req.query.currentUserId);
   
   const userFriends: FriendsFind[] = await Friend.findAll({
@@ -103,7 +103,7 @@ router.get('/get-friends', async (req: RequestWithUser, res: Response) => {
   return res.json(friendsReturn).status(OK);
 });
 
-router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
+router.get('/select-friend', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
   const authUserId = Number(req.query.authUserId);
   const receiverId = Number(req.query.receiverId);
 
@@ -144,7 +144,7 @@ router.get('/select-friend', async (req: RequestWithUser, res: Response) => {
   }).status(OK);
 });
 
-router.get('/possible-friends', async (req: RequestWithUser, res: Response) => {
+router.get('/possible-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
   const currentUserId = Number(req.query.currentUserId);
   const excluded = [ currentUserId ];
 
@@ -181,7 +181,7 @@ router.get('/possible-friends', async (req: RequestWithUser, res: Response) => {
   return res.json(possibleFriends).status(OK);
 });
 
-router.get('/friend-requests', async (req: RequestWithUser, res: Response) => {
+router.get('/friend-requests', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
   const currentUserId = Number(req.query.currentUserId);
 
   const friendRequests: Friend[] = await Friend.findAll({

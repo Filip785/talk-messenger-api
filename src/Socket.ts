@@ -28,8 +28,6 @@ export function initSocketIO(httpServer: http.Server) {
       msg.dataValues.createdAtTime = timeCreated;
       msg.dataValues.createdAt = dateCreated;
 
-      msg.dataValues.message = `${sender.username}: ${msg.dataValues.message}`;
-
       io.sockets.emit('message-received', {
         ...msg.dataValues,
         Sender: sender.dataValues
