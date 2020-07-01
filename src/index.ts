@@ -10,24 +10,25 @@ import path from 'path';
 import { initFriendModel } from './models/Friend';
 import { initMessageModel } from './models/Message';
 import { initSystemConfigs } from './models/SystemConfigs';
+import { initErrorModel } from './models/Error';
 
 const configContents = JSON.parse(fs.readFileSync(path.join(__dirname, '../database/config/config.json'), { encoding: 'utf8' }));
 
 const databaseName = configContents.development.database;
 const username = configContents.development.username;
 const password: string = configContents.development.password;
-const dbPort = configContents.development.port;
+const port = configContents.development.port;
 const dialect = configContents.development.dialect;
 const host = configContents.development.host;
 
 // Start the server
-const port = Number(process.env.PORT || 3000);
+const serverPort = Number(process.env.PORT || 3000);
 
 const httpServer = http.createServer(app);
 
 const sequelize = new Sequelize(databaseName, username, password, {
-  host: host,
-  port: dbPort,
+  host,
+  port,
   dialect
 });
 
@@ -36,6 +37,7 @@ function initModels(sequelize: Sequelize) {
   initFriendModel(sequelize);
   initMessageModel(sequelize);
   initSystemConfigs(sequelize);
+  initErrorModel(sequelize);
 }
 
 sequelize.authenticate().then(() => {
@@ -45,4 +47,4 @@ sequelize.authenticate().then(() => {
   initSocketIO(httpServer);
 }).catch((err: any) => console.error('Unable to connect to the database: ', err));
 
-httpServer.listen(port, () => logger.info('Express server started on port ' + port));
+httpServer.listen(serverPort, () => logger.info('Express server started on port ' + serverPort));
