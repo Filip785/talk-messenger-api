@@ -42,7 +42,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
   return res.json({
     ...authUser,
-    api_token: jwt.sign(authUser, process.env.TOKEN_SECRET!, { expiresIn: 60 * 60 })
+    api_token: jwt.sign(authUser, process.env.TOKEN_SECRET!, { expiresIn: '1 day' })
   }).status(OK);
 });
 

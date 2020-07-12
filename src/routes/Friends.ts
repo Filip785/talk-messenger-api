@@ -93,7 +93,7 @@ router.get('/get-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), as
         const createdAtTime = format(dateTime, 'hh:mm a');
         const createdAt = format(dateTime, 'dd.MM.yyyy');
 
-        friendsObject.lastMessage = { message: `${item.User1.username}: ${lastMessage.message}`, createdAtTime, createdAt };
+        friendsObject.lastMessage = { message: lastMessage.message, createdAtTime, createdAt };
       }
 
       friendsReturn.push(friendsObject);
