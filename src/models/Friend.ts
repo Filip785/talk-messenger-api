@@ -5,6 +5,8 @@ export default class Friend extends Model {
   public id!: number;
   public user_1!: number;
   public user_2!: number;
+  public User1?: Friend;
+  public User2?: Friend;
   public is_accepted!: number;
 }
 

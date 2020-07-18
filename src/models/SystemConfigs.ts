@@ -8,9 +8,9 @@ export default class SystemConfigs extends Model {
   public updatedAt!: string;
 
   static async getNewConversationMessage(): Promise<string> {
-    const item: SystemConfigs = await SystemConfigs.findOne({ where: { config_name: 'new_conversation_message' } });
+    const item: SystemConfigs | null = await SystemConfigs.findOne({ where: { config_name: 'new_conversation_message' } });
     
-    return item.config_value;
+    return item!.config_value;
   }
 }
 

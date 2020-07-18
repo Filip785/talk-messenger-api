@@ -3,7 +3,7 @@ import http from 'http';
 import { Op } from 'sequelize';
 import Friend from './models/Friend';
 import Message from './models/Message';
-import { format } from 'date-fns';
+import { format, addHours } from 'date-fns';
 
 export function initSocketIO(httpServer: http.Server) {
   const io = socketIO(httpServer);
@@ -25,7 +25,7 @@ export function initSocketIO(httpServer: http.Server) {
         raw: true
       });
 
-      const friendshipAmount = friendships.length;
+      const friendshipAmount = friendships.length;1
 
       for(let x = 0; x < friendshipAmount; x++) {
         socket.join(`${friendships[x].id}`);
@@ -38,23 +38,36 @@ export function initSocketIO(httpServer: http.Server) {
         receiverId: conversationMessage.receiverId,
         conversationId: conversationMessage.conversationId,
         message: conversationMessage.message,
-        is_system: 0
+        isSystem: 0,
+        // isSeen and isSeenAt default
       });
-
+      
       const sender = await msg.getSender();
 
       const dateTimeCreated = new Date(msg.createdAt);
 
-      const timeCreated = format(dateTimeCreated, 'hh:mm a');
-      const dateCreated = format(dateTimeCreated, 'dd.MM.yyyy');
+      msg.setDataValue('createdAtTime', format((dateTimeCreated.valueOf() + dateTimeCreated.getTimezoneOffset() * 60 * 1000), `hh:mm 'at' a`));
+      msg.setDataValue('createdAt', format(dateTimeCreated, 'dd.MM.yyyy'));
+      msg.setDataValue('isSeenAt', format(addHours(msg.getDataValue('isSeenAt') as Date, 2), `dd.MM.yyyy 'at' hh:mm a`));
 
-      msg.dataValues.createdAtTime = timeCreated;
-      msg.dataValues.createdAt = dateCreated;
 
       io.to(`${conversationMessage.conversationId}`).emit('message-received', {
-        ...msg.dataValues,
-        Sender: sender.dataValues
+        ...msg.get({ plain: true }),
+        Sender: sender.get({ plain: true })
       });
+    });
+
+    socket.on('message-seen', async (msgId: number, conversationId: number) => {
+      const dateTime = new Date().toUTCString();
+      // has to be utc time
+      
+      // have to get message somehow to get isSeenAt
+      await Message.update({
+        isSeen: 1,
+        isSeenAt: dateTime
+      }, { where: { id: msgId } });
+      
+      io.to(`${conversationId}`).emit('message-seen-update');
     });
   });
 }

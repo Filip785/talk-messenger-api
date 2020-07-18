@@ -27,7 +27,7 @@ router.post('/login', async (req: Request, res: Response) => {
       error: paramMissingError,
     });
   }
-  const user: User = await User.findOne({
+  const user: User | null = await User.findOne({
     where: {
       username: loginData.username
     },

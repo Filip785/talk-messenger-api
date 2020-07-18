@@ -1,13 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { BAD_REQUEST, OK, UNAUTHORIZED } from 'http-status-codes';
+import { BAD_REQUEST, OK } from 'http-status-codes';
 import { paramMissingError } from '@shared/constants';
 import User from '../models/User';
 import Friend from '../models/Friend';
 import Message from '../models/Message';
-//import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import { Op } from 'sequelize';
-import { format } from 'date-fns';
+import { format, addHours } from 'date-fns';
 import SystemConfigs from 'src/models/SystemConfigs';
 
 const router = Router();
@@ -24,21 +23,9 @@ interface RequestWithUser extends Request {
   user?: JwtUser;
 }
 
-interface FriendReturn {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface FriendsFind {
-  id: number;
-  User1: FriendReturn;
-  User2: FriendReturn;
-}
-
 interface FriendConversation {
   conversationId: number;
-  friend: FriendReturn;
+  friend?: Friend;
   lastMessage?: { message: string, createdAtTime: string, createdAt: string }
 }
 
@@ -50,7 +37,7 @@ interface AddFriendData {
 router.get('/get-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), async (req: RequestWithUser, res: Response) => {
   const currentUserId = Number(req.query.currentUserId);
   
-  const userFriends: FriendsFind[] = await Friend.findAll({
+  const userFriends: Friend[] = await Friend.findAll({
     where: {
       [Op.or]: {
         user_1: currentUserId,
@@ -77,7 +64,7 @@ router.get('/get-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), as
     for (let x = 0; x < friendsLength; x++) {
       const item = userFriends[x];
 
-      const lastMessage: Message = await Message.findOne({
+      const lastMessage: Message | null = await Message.findOne({
         where: {
           conversationId: item.id
         },
@@ -85,7 +72,7 @@ router.get('/get-friends', expressJwt({ secret: process.env.TOKEN_SECRET! }), as
         raw: true
       });
 
-      const friendsObject: FriendConversation = { conversationId: item.id, friend: Number(item.User1.id) !== currentUserId ? item.User1 : item.User2, lastMessage: undefined };
+      const friendsObject: FriendConversation = { conversationId: item.id, friend: Number(item.User1!.id) !== currentUserId ? item.User1 : item.User2, lastMessage: undefined };
 
       if(lastMessage) {
         const dateTime = new Date(lastMessage.createdAt);
@@ -107,7 +94,7 @@ router.get('/select-friend', expressJwt({ secret: process.env.TOKEN_SECRET! }), 
   const authUserId = Number(req.query.authUserId);
   const receiverId = Number(req.query.receiverId);
 
-  const conversation: Friend = await Friend.findOne({
+  const conversation: Friend | null = await Friend.findOne({
     where: {
       [Op.or]: [
         { user_1: authUserId, user_2: receiverId },
@@ -117,10 +104,10 @@ router.get('/select-friend', expressJwt({ secret: process.env.TOKEN_SECRET! }), 
     raw: true
   });
 
-  const messages = await Message.findAll({
-    attributes: ['id', 'message', 'is_system', 'createdAt', 'conversationId'],
+  const messages: Message[] = await Message.findAll({
+    attributes: ['id', 'message', 'isSystem', 'createdAt', 'conversationId', 'isSeen', 'isSeenAt'],
     where: {
-      conversationId: conversation.id
+      conversationId: conversation!.id
     },
     include: [{
       model: User,
@@ -137,9 +124,14 @@ router.get('/select-friend', expressJwt({ secret: process.env.TOKEN_SECRET! }), 
 
   const newConversationMessage: string = await SystemConfigs.getNewConversationMessage();
 
+  if (authUserId !== receiverId) {
+    const lastItem = messages[messages.length - 1];
+    lastItem.setDataValue('isSeenAt', format(addHours(lastItem.isSeenAt as Date, 2), `dd.MM.yyyy 'at' hh:mm a`));
+  }
+
   return res.json({
     items: messages,
-    conversationId: conversation.id,
+    conversationId: conversation!.id,
     newConversationMessage
   }).status(OK);
 });
@@ -268,9 +260,9 @@ router.post('/deny-friend', async (req: RequestWithUser, res: Response) => {
   }
 
   try {
-    const user: Friend = await Friend.findOne({ where: { user_1: addFriendData.addingId, user_2: addFriendData.friendId } });
+    const user: Friend | null = await Friend.findOne({ where: { user_1: addFriendData.addingId, user_2: addFriendData.friendId } });
 
-    await user.update({
+    await user!.update({
       is_accepted: -1
     });
   } catch(err) {

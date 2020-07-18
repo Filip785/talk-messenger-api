@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, HasManyOptions } from "sequelize";
+import { Model, DataTypes, Sequelize, HasOneGetAssociationMixin } from "sequelize";
 import User from './User';
 import Friend from './Friend';
 
@@ -8,9 +8,14 @@ export default class Message extends Model {
   public receiverId!: number;
   public conversationId!: number;
   public message!: string;
-  public is_system!: number;
+  public isSeen!: number;
+  public isSeenAt!: Date | string;
+  public isSystem!: number;
   public createdAt!: string;
   public updatedAt!: string;
+  public createdAtTime!: string;
+
+  public getSender!: HasOneGetAssociationMixin<Friend>;
 }
 
 export function initMessageModel(sequelize: Sequelize) {
@@ -36,7 +41,13 @@ export function initMessageModel(sequelize: Sequelize) {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    is_system: {
+    isSeen: {
+      type: DataTypes.INTEGER.UNSIGNED,
+    },
+    isSeenAt: {
+      type: 'TIMESTAMP',
+    },
+    isSystem: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     }
@@ -60,4 +71,3 @@ export function initMessageModel(sequelize: Sequelize) {
     foreignKey: 'conversationId'
   });
 }
-

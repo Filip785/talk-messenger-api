@@ -6,7 +6,10 @@
     "lint": "tslint --project \"tsconfig.json\"",
     "start": "node -r module-alias/register ./dist",
     "start:dev": "nodemon --config nodemon.json",
-    "test": "nodemon --config nodemon.test.json"
+    "test": "nodemon --config nodemon.test.json",
+    "build-new": "node ./util/build.js && npm run transpile",
+    "tsc": "tsc --build tsconfig.prod.json",
+    "transpile": "npm run tsc"
   },
   "_moduleAliases": {
     "@daos": "dist/daos",
@@ -16,10 +19,12 @@
   },
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/bluebird": "^3.5.32",
     "@types/cors": "^2.8.6",
     "@types/express-jwt": "^0.0.42",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/socket.io": "^2.1.4",
+    "@types/validator": "^13.1.0",
     "bcrypt": "^4.0.1",
     "command-line-args": "^5.1.1",
     "cookie-parser": "^1.4.5",
