@@ -19,6 +19,7 @@ const username = configContents.development.username;
 const password: string = configContents.development.password;
 const port = configContents.development.port;
 const dialect = configContents.development.dialect;
+const dialectOptions = configContents.development.dialectOptions;
 const host = configContents.development.host;
 
 // Start the server
@@ -29,7 +30,8 @@ const httpServer = http.createServer(app);
 const sequelize = new Sequelize(databaseName, username, password, {
   host,
   port,
-  dialect
+  dialect,
+  dialectOptions
 });
 
 function initModels(sequelize: Sequelize) {

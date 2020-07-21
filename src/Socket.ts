@@ -25,7 +25,7 @@ export function initSocketIO(httpServer: http.Server) {
         raw: true
       });
 
-      const friendshipAmount = friendships.length;1
+      const friendshipAmount = friendships.length;
 
       for(let x = 0; x < friendshipAmount; x++) {
         socket.join(`${friendships[x].id}`);
@@ -58,16 +58,14 @@ export function initSocketIO(httpServer: http.Server) {
     });
 
     socket.on('message-seen', async (msgId: number, conversationId: number) => {
-      const dateTime = new Date().toUTCString();
-      // has to be utc time
-      
-      // have to get message somehow to get isSeenAt
-      await Message.update({
-        isSeen: 1,
-        isSeenAt: dateTime
+      const isSeenAt = format(new Date(), 'yyyy-MM-dd hh:mm a');
+
+      const msg = await Message.update({
+        //isSeen: 1,
+        isSeenAt
       }, { where: { id: msgId } });
       
-      io.to(`${conversationId}`).emit('message-seen-update');
+      io.to(`${conversationId}`).emit('message-seen-update', format(new Date(isSeenAt), `dd.MM.yyyy 'at' hh:mm a`));
     });
   });
 }

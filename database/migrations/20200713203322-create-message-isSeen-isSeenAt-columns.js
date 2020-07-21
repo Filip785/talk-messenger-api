@@ -11,7 +11,7 @@ module.exports = {
         allowNull: false,
       }, { transaction });
       await queryInterface.addColumn('Messages', 'isSeenAt', {
-        type: 'TIMESTAMP',
+        type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         allowNull: false,
       }, { transaction });

@@ -30,10 +30,13 @@ module.exports = {
         }
       },
       message: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        allowNull: false
       },
-      is_system: {
-        type: Sequelize.INTEGER
+      isSystem: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,

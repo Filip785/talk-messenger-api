@@ -124,7 +124,7 @@ router.get('/select-friend', expressJwt({ secret: process.env.TOKEN_SECRET! }), 
 
   const newConversationMessage: string = await SystemConfigs.getNewConversationMessage();
 
-  if (authUserId !== receiverId) {
+  if (authUserId !== receiverId && messages.length > 0) {
     const lastItem = messages[messages.length - 1];
     lastItem.setDataValue('isSeenAt', format(addHours(lastItem.isSeenAt as Date, 2), `dd.MM.yyyy 'at' hh:mm a`));
   }
